@@ -11,50 +11,46 @@ st.set_page_config(
 )
 
 st.title("Orbital Collision Avoidance")
-st.write("V0.2 - Visualizing Satellite Orbit Around Earth (NORAD/name search)")
+st.write("V0.3 - Visualizing Satellite Orbit Around Earth (Search for Satellite through dropdown menu)")
 
-satellite_query = st.text_input(
-    "Enter the name of a satellite or its NORAD catalog number",
-    value = "ISS"
+def load_satellite():
+    url = "https://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=tle"
+    response = requests.get(url, timeout=20)
+    response.raise_for_status()
+
+    lines = [line.strip() for line in response.text.strip().splitlines() if line.strip()]
+
+    catalog = {}
+    for i in range(0, len(lines) - 2, 3):
+        name = lines[i]
+        line1 = lines[i+1]
+        line2 = lines[i+2]
+
+        norad_id = line1[2:7].strip()
+        label = f"{name} ({norad_id})"
+        catalog[label] = (name, line1, line2)
+
+    return catalog
+
+catalog = load_satellite()
+labels = sorted(catalog.keys())
+
+default_index = 0
+for i, label in enumerate(labels):
+    if label.startswith("ISS "):
+        default_index = i
+        break
+
+selected_label = st.selectbox(
+    "Search for a satellite",
+    options = labels,
+    index = default_index
 )
 
-def get_satellite(query):
-    query = query.strip()
-    if not query:
-        return None
-    if query.isdigit():
-        url = ("https://celestrak.org/NORAD/elements/gp.php"
-            f"?CATNR={query}&FORMAT=TLE"
-        )
-    else:
-        url = ("https://celestrak.org/NORAD/elements/gp.php"
-            f"?NAME={query}&FORMAT=TLE")
-    response = requests.get(url, timeout=10)
-    if response.status_code != 200:
-        return None
-    
-    lines = response.text.strip().splitlines()
+name, line, line2 = catalog[selected_label]
+st.success(f"Satellite Found")
 
-    lines = [line.strip() for line in lines if line.strip()]
 
-    if len(lines) < 3:
-        return None
-    
-    satellite_name = lines[0]
-    tle_line1 = lines[1]
-    tle_line2 = lines[2]
-    
-    return satellite_name, tle_line1, tle_line2
-
-satellite_data = get_satellite(satellite_query)
-
-if satellite_data is None:
-    st.error("Satellite not found. Try another.")
-    st.stop()
-
-name, line, line2 = satellite_data
-
-st.success(f"Found {name}")
 
 duration_hours = st.slider(
     "Hours Orbit Visualized For",
