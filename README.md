@@ -8,7 +8,7 @@ A Streamlit app for visualizing various satellite orbits around the Earth in thr
 - **3D orbit visualization** — plots the satellite's path around the Earth using [Plotly](https://plotly.com/python/3d-charts/), with adjustable time windows and numbers of positional calculations
 - **Position slider** — use the postion slider to go through the satellites position at any point along orbit, with the satellite's live X/Y/Z coordinates
 - **Error handling** — catches any network timeouts, connection failures and HTTP errors from Celestrak, fetching back to the last cached satellite
-- **Manual refresh** -
+- **Manual refresh** —
 Sidebar button that re-fetches the satellite catalog from Celestrak
 
 ## How it works
